@@ -1,7 +1,6 @@
 package pond
 
 import (
-        "log"
         "crypto/sha1"
         "encoding/base64"
 
@@ -35,8 +34,6 @@ func (r *Rock) MessageHash(msg string) string {
 func (r *Rock) FlagAsSent() {
         conn := pool.Get()
         defer conn.Close()
-
-        log.Println("Sent", sent_key, r.Hash)
 
         conn.Do("SADD", sent_key, r.Hash)
         conn.Do("LPOP", backup_key)

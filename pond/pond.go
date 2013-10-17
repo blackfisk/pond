@@ -72,19 +72,18 @@ func (p *Pond) broadcaster(i int) {
         for {
                 msg, _ := redis.Bytes(conn.Do("BRPOPLPUSH", queue_key, backup_key, 5))
                 if msg != nil {
-                        return
+                        rock := NewRock(msg)
+
+                        if !rock.alreadySent() {
+                                //message := bytes.NewBufferString(msg)
+                                //rock.StoreForReading()
+                                //p.sendToTheRiver(rock)
+                                rock.FlagAsSent()
+
+                                log.Printf("----> [b:%d] New message %s", i, rock.Message)
+                        }
                 }
 
-                rock := NewRock(msg)
-
-                if !rock.alreadySent() {
-                        //message := bytes.NewBufferString(msg)
-                      //rock.StoreForReading()
-                      //p.sendToTheRiver(rock)
-                      rock.FlagAsSent()
-
-                        log.Printf("----> [b:%d] New message %s", i, rock.Message)
-                }
         }
 }
 
