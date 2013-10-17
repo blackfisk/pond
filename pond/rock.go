@@ -1,0 +1,62 @@
+package pond
+
+import (
+        "log"
+        "crypto/sha1"
+        "encoding/base64"
+
+        "github.com/garyburd/redigo/redis"
+)
+
+type Rock struct {
+        Message []byte
+        Hash    string
+}
+
+func NewRock(msg []byte) *Rock {
+        r := new(Rock)
+        r.Message = msg
+        r.Hash = r.MessageHash(string(msg))
+
+        return r
+}
+
+func (r *Rock) StoreForReading() {
+}
+
+func (r *Rock) MessageHash(msg string) string {
+        h := sha1.New()
+        h.Write([]byte(msg))
+        sha := base64.URLEncoding.EncodeToString(h.Sum(nil))
+
+        return sha
+}
+
+func (r *Rock) FlagAsSent() {
+        conn := pool.Get()
+        defer conn.Close()
+
+        log.Println("Sent", sent_key, r.Hash)
+
+        conn.Do("SADD", sent_key, r.Hash)
+        conn.Do("LPOP", backup_key)
+}
+
+func (r *Rock) alreadySent() bool {
+        conn := pool.Get()
+        defer conn.Close()
+
+        exists, err := redis.Bool(conn.Do("EXISTS", sent_key))
+        if err != nil {
+                panic(err)
+        }
+
+        if !exists {
+                return false
+        }
+
+        hash := string(r.Hash)
+        already_sent, _ := redis.Bool(conn.Do("SISMEMBER", sent_key, hash))
+
+        return already_sent
+}
