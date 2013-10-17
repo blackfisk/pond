@@ -76,11 +76,11 @@ func (p *Pond) broadcaster(i int) {
 
                         if !rock.alreadySent() {
                                 //message := bytes.NewBufferString(msg)
-                                //rock.StoreForReading()
+                                rock.StoreForReading()
                                 //p.sendToTheRiver(rock)
                                 rock.FlagAsSent()
 
-                                log.Printf("----> [b:%d] New message %s", i, rock.Message)
+                                log.Printf("----> [b:%d] Sent message %s", i, rock.Message)
                         }
                 }
 

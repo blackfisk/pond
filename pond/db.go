@@ -16,9 +16,9 @@ var (
 	redis_url = parts[1]
 
         messages_key = "pond:messages"
-        queue_key  = "pond:queue"
-        backup_key = "pond:backup"
-        sent_key   = "pond:sent"
+        queue_key    = "pond:queue"
+        backup_key   = "pond:backup"
+        sent_key     = "pond:sent"
 )
 
 var pool = &redis.Pool{

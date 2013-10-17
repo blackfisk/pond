@@ -21,6 +21,10 @@ func NewRock(msg []byte) *Rock {
 }
 
 func (r *Rock) StoreForReading() {
+        conn := pool.Get()
+        defer conn.Close()
+
+        conn.Do("LPUSH", messages_key, r.Message)
 }
 
 func (r *Rock) MessageHash(msg string) string {
