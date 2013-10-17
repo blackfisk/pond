@@ -15,10 +15,10 @@ var (
 	password  = parts[0][1:]
 	redis_url = parts[1]
 
-        messages_key = "pond:messages"
-        queue_key    = "pond:queue"
-        backup_key   = "pond:backup"
-        sent_key     = "pond:sent"
+	messages_key = "pond:messages"
+	queue_key    = "pond:queue"
+	backup_key   = "pond:backup"
+	sent_key     = "pond:sent"
 )
 
 var pool = &redis.Pool{
