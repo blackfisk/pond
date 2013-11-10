@@ -9,10 +9,10 @@ import (
 )
 
 func main() {
-	p := pond.New()
+	p := pond.NewPond()
 	port := ":" + os.Getenv("PORT")
 
-	http.Handle("/message", p)
+	http.Handle("/", p)
 
 	log.Println("--> Listening in", port)
 	err := http.ListenAndServe(port, nil)

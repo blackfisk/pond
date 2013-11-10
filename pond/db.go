@@ -15,7 +15,8 @@ var (
 	password  = parts[0][1:]
 	redis_url = parts[1]
 
-	messages_key = "pond:messages"
+	message_key  = "pond:message"
+	friends_key  = "pond:friends"
 	queue_key    = "pond:queue"
 	backup_key   = "pond:backup"
 	sent_key     = "pond:sent"

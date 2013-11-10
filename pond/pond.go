@@ -13,7 +13,7 @@ type Pond struct {
 	queue chan *Rock
 }
 
-func New() *Pond {
+func NewPond() *Pond {
 	p := new(Pond)
 	p.queue = make(chan *Rock)
 
@@ -30,14 +30,21 @@ func New() *Pond {
 
 func (p *Pond) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	body := req.Body
-	if body != nil {
-		bytes, _ := ioutil.ReadAll(body)
-		rock := NewRock(bytes)
+        switch req.Method {
+        case "POST":
+                if body != nil {
+                        bytes, _ := ioutil.ReadAll(body)
+                        rock := NewRock(bytes)
 
-		if !rock.alreadySent() {
-			p.queue <- rock
-		}
-	}
+                        if !rock.alreadySent() {
+                                p.queue <- rock
+                        }
+                }
+
+        case "GET":
+
+
+        }
 }
 
 func (p *Pond) storeMessage(msg []byte) {
@@ -48,6 +55,8 @@ func (p *Pond) storeMessage(msg []byte) {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Println("---> Message stored", msg)
 }
 
 func (p *Pond) worker(i int) {
@@ -75,8 +84,8 @@ func (p *Pond) broadcaster(i int) {
 			rock := NewRock(msg)
 
 			if !rock.alreadySent() {
+				go p.sendToTheRiver(rock)
 				rock.StoreForReading()
-				p.sendToTheRiver(rock)
 				rock.FlagAsSent()
 
 				log.Printf("----> [b:%d] Sent message %s", i, rock.Message)
@@ -84,6 +93,15 @@ func (p *Pond) broadcaster(i int) {
 		}
 
 	}
+}
+
+func (p *Pond) sendToTheRiver(rock *Rock) {
+	conn := pool.Get()
+	defer conn.Close()
+
+        redis.Values(conn.Do("HGETALL", friends_key))
+
+        //http.Post("http://example.com/upload", "image/jpeg", &buf)
 }
 
 func (p *Pond) startWorkers() {
