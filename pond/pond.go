@@ -30,6 +30,7 @@ func NewPond() *Pond {
 
 func (p *Pond) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	body := req.Body
+
         switch req.Method {
         case "POST":
                 if body != nil {
@@ -42,8 +43,16 @@ func (p *Pond) ServeHTTP(w http.ResponseWriter, req *http.Request) {
                 }
 
         case "GET":
+                conn := pool.Get()
+                defer conn.Close()
 
+                keys, _ := redis.Strings(conn.Do("KEYS", message_key + ":*"))
 
+                for _, key := range keys {
+                        msg, _ := redis.Bytes(conn.Do("GET", key))
+                        w.Write(msg)
+                        w.Write([]byte("\r\n\r\n"))
+                }
         }
 }
 
