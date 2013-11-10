@@ -64,7 +64,7 @@ func (p *Pond) storeMessage(msg []byte) {
 		panic(err)
 	}
 
-	log.Println("---> Message stored", msg)
+	log.Println("---> Message stored!")
 }
 
 func (p *Pond) worker(i int) {
@@ -75,7 +75,7 @@ func (p *Pond) worker(i int) {
 	for {
 		rock = <-p.queue
 		if !rock.alreadySent() {
-			log.Printf("----> [w:%d] Incoming message!: %s", i, string(rock.Message))
+			log.Printf("----> [w:%d] Incoming message!", i)
 			p.storeMessage(rock.Message)
 		}
 	}
@@ -96,7 +96,7 @@ func (p *Pond) broadcaster(i int) {
 				rock.StoreForReading()
 				rock.FlagAsSent()
 
-				log.Printf("----> [b:%d] Sent message %s", i, rock.Message)
+				log.Printf("----> [b:%d] Sent message", i)
 			}
 		}
 
