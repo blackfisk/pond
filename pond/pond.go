@@ -51,7 +51,6 @@ func (p *Pond) ServeHTTP(w http.ResponseWriter, req *http.Request) {
                 for _, key := range keys {
                         msg, _ := redis.Bytes(conn.Do("GET", key))
                         w.Write(msg)
-                        w.Write([]byte("\r\n\r\n"))
                 }
         }
 }
