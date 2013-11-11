@@ -3,6 +3,9 @@ package pond
 import (
 	"io/ioutil"
 	"log"
+	"os"
+	"bufio"
+	"bytes"
 	"net/http"
 	"runtime"
 
@@ -104,12 +107,14 @@ func (p *Pond) broadcaster(i int) {
 }
 
 func (p *Pond) sendToTheRiver(rock *Rock) {
-	conn := pool.Get()
-	defer conn.Close()
+        friendsFile, _ := os.Open(".ponds")
+        scanner := bufio.NewScanner(friendsFile)
+        message := bytes.NewReader(rock.Message)
 
-        redis.Values(conn.Do("HGETALL", friends_key))
-
-        //http.Post("http://example.com/upload", "image/jpeg", &buf)
+        for scanner.Scan() {
+                friend := scanner.Text()
+                http.Post("http://" + friend, "text/plain", message)
+        }
 }
 
 func (p *Pond) startWorkers() {
