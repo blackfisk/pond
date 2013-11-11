@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"bytes"
 	"net/http"
+	"encoding/json"
 	"runtime"
 
 	"github.com/garyburd/redigo/redis"
@@ -50,11 +51,16 @@ func (p *Pond) ServeHTTP(w http.ResponseWriter, req *http.Request) {
                 defer conn.Close()
 
                 keys, _ := redis.Strings(conn.Do("KEYS", message_key + ":*"))
+                messages := make([]string, 0)
 
                 for _, key := range keys {
-                        msg, _ := redis.Bytes(conn.Do("GET", key))
-                        w.Write(msg)
+                        msg, _ := redis.String(conn.Do("GET", key))
+                        messages = append(messages, msg)
                 }
+
+                output, _ := json.Marshal(messages)
+
+                w.Write(output)
         }
 }
 
