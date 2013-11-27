@@ -125,9 +125,9 @@ func (c *PondClient) agentIsRunning() {
 
 func (c *PondClient) Fetch() {
         data := c.getJSON()
+
         c.createDir()
         c.agentIsRunning()
         c.decryptMessages(data)
         c.readMessages()
-
 }

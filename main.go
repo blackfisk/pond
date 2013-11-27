@@ -58,6 +58,10 @@ func init() {
                         return &command.FetchCommand{ Ui: ui, }, nil
                 },
 
+                "send": func() (cli.Command, error) {
+                        return &command.SendCommand{ Ui: ui, }, nil
+                },
+
                 // send in anonymous
                 // daemon
 

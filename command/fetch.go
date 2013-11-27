@@ -12,9 +12,9 @@ type FetchCommand struct {
 
 func (c *FetchCommand) Help() string {
         helpText := `
-        Usage: pond fetch [options]
+        Usage: pond send [options] to
 
-        Fetches messages from pond
+        Send messages to a pond
 
         Options:
 

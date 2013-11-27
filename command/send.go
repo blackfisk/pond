@@ -1,0 +1,51 @@
+package command
+
+import (
+        "strings"
+        "flag"
+        "github.com/mitchellh/cli"
+        "github.com/blackfisk/pond/client"
+)
+
+type SendCommand struct {
+        Ui cli.Ui
+}
+
+func (c *SendCommand) Help() string {
+        helpText := `
+        Usage: pond send email [options]
+
+        Fetches messages from pond
+
+        Options:
+
+        `
+        return strings.TrimSpace(helpText)
+}
+
+func (c *SendCommand) Run(args []string) int {
+        cmdFlags := flag.NewFlagSet("send", flag.ContinueOnError)
+        if err := cmdFlags.Parse(args); err != nil {
+                return 1
+        }
+        args = cmdFlags.Args()
+
+        if len(args) < 1 {
+                c.Ui.Error("You need to tell me to who should I send it")
+                c.Ui.Error("")
+                c.Ui.Error(c.Help())
+                return 1
+        }
+
+        email := args[0]
+
+        pc := client.NewPondClient("http://localhost:12345")
+        pc.Send(email, "message")
+        c.Ui.Output("Message sent!")
+
+        return 0
+}
+
+func (c *SendCommand) Synopsis() string {
+        return "Fetches messages from a pond server"
+}
