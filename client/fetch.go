@@ -55,11 +55,11 @@ func (c *PondClient) createDir() {
 }
 
 func (r *PondClient) messageHash(msg string) string {
-	h := sha1.New()
-	h.Write([]byte(msg))
-	sha := base64.URLEncoding.EncodeToString(h.Sum(nil))
+        h := sha1.New()
+        h.Write([]byte(msg))
+        sha := base64.URLEncoding.EncodeToString(h.Sum(nil))
 
-	return sha
+        return sha
 }
 
 func (c *PondClient) decryptMessages(data []interface{}) {
@@ -68,66 +68,63 @@ func (c *PondClient) decryptMessages(data []interface{}) {
         }
 
         for _, message := range data {
-                go func() {
-                        msg := message.(string)
-                        sha := c.messageHash(msg)
+                msg := message.(string)
+                sha := c.messageHash(msg)
 
-                        gpg_filename := fmt.Sprintf("%s/%s.gpg", c.Home, sha)
-                        filename := fmt.Sprintf("%s/%s", c.Home, sha)
+                gpg_filename := fmt.Sprintf("%s/%s.gpg", c.Home, sha)
+                filename := fmt.Sprintf("%s/%s", c.Home, sha)
 
-                        if _, err := os.Stat(gpg_filename); err != nil {
-                                return
-                        }
+                err := ioutil.WriteFile(gpg_filename, []byte(msg), 0666)
+                if err != nil {
+                        panic(err)
+                }
 
-                        ioutil.WriteFile(gpg_filename, []byte(msg), 0666)
+                var args []string
 
-                        var args []string
-
-                        if !c.agentAvailable {
-                                args = []string{
-                                        "--batch",
-                                        "--passphrase", c.passphrase,
-                                        "-o", filename, "--decrypt", gpg_filename}
+                if !c.agentAvailable {
+                        args = []string{
+                                "--batch",
+                                "--passphrase", c.passphrase,
+                                "-o", filename, "--decrypt", gpg_filename}
                         } else {
                                 args = []string{
                                         "--batch", "--use-agent",
                                         "-o", filename, "--decrypt", gpg_filename}
+                                }
+
+                                cmd := exec.Command("gpg", args...)
+                                cmd.Start()
+                                cmd.Wait()
                         }
-
-                        cmd := exec.Command("gpg", args...)
-                        cmd.Start()
-                        cmd.Wait()
-                }()
-        }
-}
-
-
-func (c *PondClient) readMessages() {
-        new_messages, _ := filepath.Glob(c.Home + "/*")
-        for _, incoming := range new_messages {
-                ext := filepath.Ext(incoming)
-                if ext == "" {
-                        content, _ := ioutil.ReadFile(incoming)
-                        fmt.Println(string(content))
                 }
-        }
-}
 
-func (c *PondClient) agentIsRunning() {
-        out, err := exec.Command("ps", "uax").Output()
-        if err != nil {
-                panic(err)
-        }
-        re := regexp.MustCompile("gpg-agent")
-        running := re.FindString(string(out)) != ""
-        c.agentAvailable = running
-}
 
-func (c *PondClient) Fetch() {
-        data := c.getJSON()
+                func (c *PondClient) readMessages() {
+                        new_messages, _ := filepath.Glob(c.Home + "/*")
+                        for _, incoming := range new_messages {
+                                ext := filepath.Ext(incoming)
+                                if ext == "" {
+                                        content, _ := ioutil.ReadFile(incoming)
+                                        fmt.Println(string(content))
+                                }
+                        }
+                }
 
-        c.createDir()
-        c.agentIsRunning()
-        c.decryptMessages(data)
-        c.readMessages()
-}
+                func (c *PondClient) agentIsRunning() {
+                        out, err := exec.Command("ps", "uax").Output()
+                        if err != nil {
+                                panic(err)
+                        }
+                        re := regexp.MustCompile("gpg-agent")
+                        running := re.FindString(string(out)) != ""
+                        c.agentAvailable = running
+                }
+
+                func (c *PondClient) Fetch() {
+                        data := c.getJSON()
+
+                        c.createDir()
+                        c.agentIsRunning()
+                        c.decryptMessages(data)
+                        c.readMessages()
+                }
