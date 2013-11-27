@@ -13,13 +13,34 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"sort"
+	"time"
 )
+
+type PondMessages []PondMessage
+
+func (pm PondMessages) Index(n int) interface{} { return pm[n] }
+func (pm PondMessages) Len() int                { return len(pm) }
+func (pm PondMessages) Swap(i int, j int)       { pm[i], pm[j] = pm[j], pm[i] }
+
+type ByName struct{ PondMessages }
+
+func (b ByName) Less(i, j int) bool {
+	return b.PondMessages[i].ModTime.Unix() < b.PondMessages[j].ModTime.Unix()
+}
 
 type PondClient struct {
 	Home           string
+	Messages       PondMessages
 	url            string
 	agentAvailable bool
 	passphrase     string
+}
+
+type PondMessage struct {
+	Hash    string
+	Content []byte
+	ModTime time.Time
 }
 
 func NewPondClient(url string) *PondClient {
@@ -74,27 +95,31 @@ func (c *PondClient) decryptMessages(data []interface{}) {
 		gpg_filename := fmt.Sprintf("%s/%s.gpg", c.Home, sha)
 		filename := fmt.Sprintf("%s/%s", c.Home, sha)
 
-		err := ioutil.WriteFile(gpg_filename, []byte(msg), 0666)
+		_, err := os.Stat(gpg_filename)
+
 		if err != nil {
-			panic(err)
+			err = ioutil.WriteFile(gpg_filename, []byte(msg), 0666)
+			if err != nil {
+				panic(err)
+			}
+
+			var args []string
+
+			if !c.agentAvailable {
+				args = []string{
+					"--batch",
+					"--passphrase", c.passphrase,
+					"-o", filename, "--decrypt", gpg_filename}
+			} else {
+				args = []string{
+					"--batch", "--use-agent",
+					"-o", filename, "--decrypt", gpg_filename}
+			}
+
+			cmd := exec.Command("gpg", args...)
+			cmd.Start()
+			cmd.Wait()
 		}
-
-		var args []string
-
-		if !c.agentAvailable {
-			args = []string{
-				"--batch",
-				"--passphrase", c.passphrase,
-				"-o", filename, "--decrypt", gpg_filename}
-		} else {
-			args = []string{
-				"--batch", "--use-agent",
-				"-o", filename, "--decrypt", gpg_filename}
-		}
-
-		cmd := exec.Command("gpg", args...)
-		cmd.Start()
-		cmd.Wait()
 	}
 }
 
@@ -103,11 +128,24 @@ func (c *PondClient) readMessages() {
 	for _, incoming := range new_messages {
 		ext := filepath.Ext(incoming)
 		if ext == "" {
+			finfo, _ := os.Stat(incoming)
 			content, _ := ioutil.ReadFile(incoming)
-			fmt.Println("-----------------------------------------")
-			fmt.Println(string(content))
-			fmt.Println("-----------------------------------------")
+
+			pond_message := PondMessage{
+				ModTime: finfo.ModTime(),
+				Content: content}
+
+			c.Messages = append(c.Messages, pond_message)
 		}
+	}
+
+	sort.Sort(ByName{c.Messages})
+
+	for _, message := range c.Messages {
+		fmt.Println("-----------------------------------------")
+		fmt.Println(message.ModTime)
+		fmt.Println(string(message.Content))
+		fmt.Println("-----------------------------------------")
 	}
 }
 
