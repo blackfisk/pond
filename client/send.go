@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"errors"
 	"net/http"
 	"os/exec"
 )
@@ -16,7 +17,10 @@ func (c *PondClient) populateStdin(str string) func(io.WriteCloser) {
 }
 
 func (c *PondClient) Send(email, message string) bool {
-	gpg := c.runCmdFromStdin(c.populateStdin(message), email)
+	gpg, err := c.runCmdFromStdin(c.populateStdin(message), email)
+        if err != nil {
+                return false
+        }
 	return c.sendToPond(gpg)
 }
 
@@ -29,7 +33,7 @@ func (c *PondClient) sendToPond(message string) bool {
 	return response.StatusCode == 200
 }
 
-func (c *PondClient) runCmdFromStdin(populate_stdin_func func(io.WriteCloser), email string) string {
+func (c *PondClient) runCmdFromStdin(populate_stdin_func func(io.WriteCloser), email string) (string, error) {
 	args := []string{
 		"--encrypt", "--armor",
 		"-R", email,
@@ -51,7 +55,7 @@ func (c *PondClient) runCmdFromStdin(populate_stdin_func func(io.WriteCloser), e
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Panic(err)
+                return "", errors.New("Invalid email")
 	}
-	return buf.String()
+	return buf.String(), nil
 }

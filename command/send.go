@@ -41,10 +41,14 @@ func (c *SendCommand) Run(args []string) int {
 	message := args[1]
 
 	pc := client.NewPondClient("http://localhost:12345")
-	pc.Send(email, message)
-	c.Ui.Output("Message sent!")
-
-	return 0
+        sent := pc.Send(email, message)
+        if sent {
+                c.Ui.Output("Message sent!")
+                return 1
+        } else {
+                c.Ui.Output("Problems sending the message")
+                return 1
+        }
 }
 
 func (c *SendCommand) Synopsis() string {
