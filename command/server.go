@@ -1,21 +1,21 @@
 package command
 
 import (
+	"fmt"
 	"net/http"
 	"os"
-	"fmt"
 
 	"github.com/blackfisk/pond/pond"
-        "github.com/mitchellh/cli"
-        "strings"
+	"github.com/mitchellh/cli"
+	"strings"
 )
 
 type ServerCommand struct {
-        Ui cli.Ui
+	Ui cli.Ui
 }
 
 func (c *ServerCommand) Help() string {
-        helpText := `
+	helpText := `
         Usage: pond server [options]
 
         Starts a pond server
@@ -23,7 +23,7 @@ func (c *ServerCommand) Help() string {
         Options:
 
         `
-        return strings.TrimSpace(helpText)
+	return strings.TrimSpace(helpText)
 }
 
 func (c *ServerCommand) Run(args []string) int {
@@ -39,9 +39,9 @@ func (c *ServerCommand) Run(args []string) int {
 		c.Ui.Error(fmt.Sprintf("ListenAndServe: ", err))
 	}
 
-        return 0
+	return 0
 }
 
 func (c *ServerCommand) Synopsis() string {
-        return "Starts a Pond server"
+	return "Starts a Pond server"
 }

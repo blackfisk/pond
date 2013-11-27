@@ -1,17 +1,17 @@
 package command
 
 import (
-        "strings"
-        "github.com/mitchellh/cli"
-        "github.com/blackfisk/pond/client"
+	"github.com/blackfisk/pond/client"
+	"github.com/mitchellh/cli"
+	"strings"
 )
 
 type FetchCommand struct {
-        Ui cli.Ui
+	Ui cli.Ui
 }
 
 func (c *FetchCommand) Help() string {
-        helpText := `
+	helpText := `
         Usage: pond send [options] to
 
         Send messages to a pond
@@ -19,16 +19,16 @@ func (c *FetchCommand) Help() string {
         Options:
 
         `
-        return strings.TrimSpace(helpText)
+	return strings.TrimSpace(helpText)
 }
 
 func (c *FetchCommand) Run(args []string) int {
-        pc := client.NewPondClient("http://localhost:12345")
-        pc.Fetch()
+	pc := client.NewPondClient("http://localhost:12345")
+	pc.Fetch()
 
-        return 0
+	return 0
 }
 
 func (c *FetchCommand) Synopsis() string {
-        return "Fetches messages from a pond server"
+	return "Fetches messages from a pond server"
 }

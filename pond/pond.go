@@ -1,13 +1,13 @@
 package pond
 
 import (
-	"io/ioutil"
-	"log"
-	"os"
 	"bufio"
 	"bytes"
-	"net/http"
 	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
 	"runtime"
 
 	"github.com/garyburd/redigo/redis"
@@ -35,33 +35,33 @@ func NewPond() *Pond {
 func (p *Pond) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	body := req.Body
 
-        switch req.Method {
-        case "POST":
-                if body != nil {
-                        bytes, _ := ioutil.ReadAll(body)
-                        rock := NewRock(bytes)
+	switch req.Method {
+	case "POST":
+		if body != nil {
+			bytes, _ := ioutil.ReadAll(body)
+			rock := NewRock(bytes)
 
-                        if !rock.alreadySent() {
-                                p.queue <- rock
-                        }
-                }
+			if !rock.alreadySent() {
+				p.queue <- rock
+			}
+		}
 
-        case "GET":
-                conn := pool.Get()
-                defer conn.Close()
+	case "GET":
+		conn := pool.Get()
+		defer conn.Close()
 
-                keys, _ := redis.Strings(conn.Do("KEYS", message_key + ":*"))
-                messages := make([]string, 0)
+		keys, _ := redis.Strings(conn.Do("KEYS", message_key+":*"))
+		messages := make([]string, 0)
 
-                for _, key := range keys {
-                        msg, _ := redis.String(conn.Do("GET", key))
-                        messages = append(messages, msg)
-                }
+		for _, key := range keys {
+			msg, _ := redis.String(conn.Do("GET", key))
+			messages = append(messages, msg)
+		}
 
-                output, _ := json.Marshal(messages)
+		output, _ := json.Marshal(messages)
 
-                w.Write(output)
-        }
+		w.Write(output)
+	}
 }
 
 func (p *Pond) storeMessage(msg []byte) {
@@ -113,14 +113,14 @@ func (p *Pond) broadcaster(i int) {
 }
 
 func (p *Pond) sendToTheRiver(rock *Rock) {
-        friendsFile, _ := os.Open(".ponds")
-        scanner := bufio.NewScanner(friendsFile)
-        message := bytes.NewReader(rock.Message)
+	friendsFile, _ := os.Open(".ponds")
+	scanner := bufio.NewScanner(friendsFile)
+	message := bytes.NewReader(rock.Message)
 
-        for scanner.Scan() {
-                friend := scanner.Text()
-                http.Post("http://" + friend, "text/plain", message)
-        }
+	for scanner.Scan() {
+		friend := scanner.Text()
+		http.Post("http://"+friend, "text/plain", message)
+	}
 }
 
 func (p *Pond) startWorkers() {

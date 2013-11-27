@@ -1,9 +1,9 @@
 package pond
 
 import (
-        "fmt"
 	"crypto/sha1"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -25,9 +25,9 @@ func (r *Rock) StoreForReading() {
 	conn := pool.Get()
 	defer conn.Close()
 
-        key := fmt.Sprintf("%s:%s", message_key, r.Hash)
+	key := fmt.Sprintf("%s:%s", message_key, r.Hash)
 
-        conn.Do("SETEX", key, 3600*24*2, r.Message)
+	conn.Do("SETEX", key, 3600*24*2, r.Message)
 }
 
 func (r *Rock) MessageHash(msg string) string {
