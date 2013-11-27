@@ -104,7 +104,9 @@ func (c *PondClient) readMessages() {
 		ext := filepath.Ext(incoming)
 		if ext == "" {
 			content, _ := ioutil.ReadFile(incoming)
+			fmt.Println("-----------------------------------------")
 			fmt.Println(string(content))
+			fmt.Println("-----------------------------------------")
 		}
 	}
 }
