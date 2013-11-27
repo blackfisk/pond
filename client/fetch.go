@@ -4,8 +4,8 @@ import (
         "net/http"
         "os"
         "os/user"
-        "strings"
         "os/exec"
+        "regexp"
         "fmt"
         "path/filepath"
         "encoding/base64"
@@ -85,7 +85,7 @@ func (c *PondClient) decryptMessages(data []interface{}) {
 
                         if !c.agentAvailable {
                                 args = []string{
-                                        "--batch", "--use-agent",
+                                        "--batch",
                                         "--passphrase", c.passphrase,
                                         "-o", filename, "--decrypt", gpg_filename}
                         } else {
@@ -114,17 +114,19 @@ func (c *PondClient) readMessages() {
 }
 
 func (c *PondClient) agentIsRunning() {
-        out, err := exec.Command("ps").Output()
+        out, err := exec.Command("ps", "uax").Output()
         if err != nil {
                 panic(err)
         }
-        c.agentAvailable = strings.Contains(string(out), "gpg-agent")
+        re := regexp.MustCompile("gpg-agent")
+        running := re.FindString(string(out)) != ""
+        c.agentAvailable = running
 }
 
 func (c *PondClient) Fetch() {
         data := c.getJSON()
         c.createDir()
-        go c.agentIsRunning()
+        c.agentIsRunning()
         c.decryptMessages(data)
         c.readMessages()
 
