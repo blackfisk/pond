@@ -4,6 +4,7 @@ import (
 	"github.com/blackfisk/pond/client"
 	"github.com/mitchellh/cli"
 	"strings"
+	"flag"
 )
 
 type FetchCommand struct {
@@ -23,7 +24,23 @@ func (c *FetchCommand) Help() string {
 }
 
 func (c *FetchCommand) Run(args []string) int {
-	pc := client.NewPondClient("http://localhost:12345")
+        var address string
+
+	cmdFlags := flag.NewFlagSet("fetch", flag.ContinueOnError)
+        cmdFlags.StringVar(&address, "pond", "", "Define the address of the pond")
+
+	if err := cmdFlags.Parse(args); err != nil {
+		return 1
+	}
+
+        if address == "" {
+		c.Ui.Error("You need to define a destination -pond")
+		c.Ui.Error("")
+
+                return 1
+        }
+
+	pc := client.NewPondClient(address)
 	pc.Fetch()
 
 	return 0

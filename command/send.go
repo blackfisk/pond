@@ -34,7 +34,9 @@ func (c *SendCommand) Run(args []string) int {
 	}
 
         if address == "" {
-                panic(address)
+		c.Ui.Error("You need to define a destination -pond")
+		c.Ui.Error("")
+                return 1
         }
 
 	args = cmdFlags.Args()
