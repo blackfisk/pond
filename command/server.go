@@ -1,10 +1,10 @@
 package command
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
-	"flag"
 
 	"github.com/blackfisk/pond/pond"
 	"github.com/mitchellh/cli"
@@ -30,21 +30,20 @@ func (c *ServerCommand) Help() string {
 type ponds []string
 
 func (p *ponds) String() string {
-        return fmt.Sprintf("%d", *p)
+	return fmt.Sprintf("%d", *p)
 }
 
 // The second method is Set(value string) error
 func (p *ponds) Set(value string) error {
-        *p = append(*p, value)
-        return nil
+	*p = append(*p, value)
+	return nil
 }
 
-
 func (c *ServerCommand) Run(args []string) int {
-        var ponds ponds
+	var ponds ponds
 
 	cmdFlags := flag.NewFlagSet("server", flag.ContinueOnError)
-        cmdFlags.Var(&ponds, "pond", "Define the address of the pond")
+	cmdFlags.Var(&ponds, "pond", "Define the address of the pond")
 
 	if err := cmdFlags.Parse(args); err != nil {
 		return 1

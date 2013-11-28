@@ -1,10 +1,10 @@
 package pond
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"bytes"
 	"net/http"
 	"runtime"
 
@@ -13,13 +13,13 @@ import (
 
 type Pond struct {
 	queue chan *Rock
-        ponds []string
+	ponds []string
 }
 
 func NewPond(ponds []string) *Pond {
 	p := new(Pond)
 	p.queue = make(chan *Rock)
-        p.ponds = ponds
+	p.ponds = ponds
 
 	p.startWorkers()
 	p.startBroadcasters()
@@ -115,9 +115,9 @@ func (p *Pond) broadcaster(i int) {
 func (p *Pond) sendToTheRiver(rock *Rock) {
 	message := bytes.NewReader(rock.Message)
 
-        for _, pond := range p.ponds {
-		http.Post("http://" + pond, "text/plain", message)
-        }
+	for _, pond := range p.ponds {
+		http.Post("http://"+pond, "text/plain", message)
+	}
 }
 
 func (p *Pond) startWorkers() {

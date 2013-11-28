@@ -24,20 +24,20 @@ func (c *SendCommand) Help() string {
 }
 
 func (c *SendCommand) Run(args []string) int {
-        var address string
+	var address string
 
 	cmdFlags := flag.NewFlagSet("send", flag.ContinueOnError)
-        cmdFlags.StringVar(&address, "pond", "", "Define the address of the pond")
+	cmdFlags.StringVar(&address, "pond", "", "Define the address of the pond")
 
 	if err := cmdFlags.Parse(args); err != nil {
 		return 1
 	}
 
-        if address == "" {
+	if address == "" {
 		c.Ui.Error("You need to define a destination -pond")
 		c.Ui.Error("")
-                return 1
-        }
+		return 1
+	}
 
 	args = cmdFlags.Args()
 
@@ -52,15 +52,15 @@ func (c *SendCommand) Run(args []string) int {
 	message := args[1]
 
 	pc := client.NewPondClient(address)
-        sent := pc.Send(email, message)
+	sent := pc.Send(email, message)
 
-        if sent {
-                c.Ui.Output("Message sent!")
-                return 1
-        } else {
-                c.Ui.Output("Problems sending the message")
-                return 1
-        }
+	if sent {
+		c.Ui.Output("Message sent!")
+		return 1
+	} else {
+		c.Ui.Output("Problems sending the message")
+		return 1
+	}
 }
 
 func (c *SendCommand) Synopsis() string {

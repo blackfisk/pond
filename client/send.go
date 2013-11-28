@@ -2,9 +2,9 @@ package client
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"log"
-	"errors"
 	"net/http"
 	"os/exec"
 )
@@ -18,9 +18,9 @@ func (c *PondClient) populateStdin(str string) func(io.WriteCloser) {
 
 func (c *PondClient) Send(email, message string) bool {
 	gpg, err := c.runCmdFromStdin(c.populateStdin(message), email)
-        if err != nil {
-                return false
-        }
+	if err != nil {
+		return false
+	}
 	return c.sendToPond(gpg)
 }
 
@@ -55,7 +55,7 @@ func (c *PondClient) runCmdFromStdin(populate_stdin_func func(io.WriteCloser), e
 
 	err = cmd.Wait()
 	if err != nil {
-                return "", errors.New("Invalid email")
+		return "", errors.New("Invalid email")
 	}
 	return buf.String(), nil
 }
