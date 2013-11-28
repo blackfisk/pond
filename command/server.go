@@ -41,6 +41,7 @@ func (p *ponds) Set(value string) error {
 
 func (c *ServerCommand) Run(args []string) int {
 	var ponds ponds
+        var port_to_use string
 
 	cmdFlags := flag.NewFlagSet("server", flag.ContinueOnError)
 	cmdFlags.Var(&ponds, "pond", "Define the address of the pond")
@@ -50,7 +51,14 @@ func (c *ServerCommand) Run(args []string) int {
 	}
 
 	p := pond.NewPond(ponds)
-	port := ":" + os.Getenv("PORT")
+
+        if os.Getenv("PORT") != "" {
+                port_to_use = os.Getenv("PORT")
+        } else {
+                port_to_use = "4242"
+        }
+
+	port := ":" + port_to_use
 
 	http.Handle("/", p)
 
