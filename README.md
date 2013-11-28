@@ -1,5 +1,7 @@
 # Pond
 
+Development version. Use with care.
+
 ## Dependencies
 
 redis-server
