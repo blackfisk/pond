@@ -1,13 +1,11 @@
 package pond
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"bytes"
 	"net/http"
-	"os"
 	"runtime"
 
 	"github.com/garyburd/redigo/redis"
@@ -15,11 +13,13 @@ import (
 
 type Pond struct {
 	queue chan *Rock
+        ponds []string
 }
 
-func NewPond() *Pond {
+func NewPond(ponds []string) *Pond {
 	p := new(Pond)
 	p.queue = make(chan *Rock)
+        p.ponds = ponds
 
 	p.startWorkers()
 	p.startBroadcasters()
@@ -113,14 +113,11 @@ func (p *Pond) broadcaster(i int) {
 }
 
 func (p *Pond) sendToTheRiver(rock *Rock) {
-	friendsFile, _ := os.Open(".ponds")
-	scanner := bufio.NewScanner(friendsFile)
 	message := bytes.NewReader(rock.Message)
 
-	for scanner.Scan() {
-		friend := scanner.Text()
-		http.Post("http://"+friend, "text/plain", message)
-	}
+        for _, pond := range p.ponds {
+		http.Post("http://" + pond, "text/plain", message)
+        }
 }
 
 func (p *Pond) startWorkers() {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"flag"
 
 	"github.com/blackfisk/pond/pond"
 	"github.com/mitchellh/cli"
@@ -26,8 +27,30 @@ func (c *ServerCommand) Help() string {
 	return strings.TrimSpace(helpText)
 }
 
+type ponds []string
+
+func (p *ponds) String() string {
+        return fmt.Sprintf("%d", *p)
+}
+
+// The second method is Set(value string) error
+func (p *ponds) Set(value string) error {
+        *p = append(*p, value)
+        return nil
+}
+
+
 func (c *ServerCommand) Run(args []string) int {
-	p := pond.NewPond()
+        var ponds ponds
+
+	cmdFlags := flag.NewFlagSet("server", flag.ContinueOnError)
+        cmdFlags.Var(&ponds, "pond", "Define the address of the pond")
+
+	if err := cmdFlags.Parse(args); err != nil {
+		return 1
+	}
+
+	p := pond.NewPond(ponds)
 	port := ":" + os.Getenv("PORT")
 
 	http.Handle("/", p)
