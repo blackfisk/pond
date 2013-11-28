@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	server = os.Getenv("OPENREDIS_URL")[8:]
+	server = os.Getenv("REDIS_URL")[8:]
 	parts  = strings.Split(server, "@")
 
 	password  = parts[0][1:]
